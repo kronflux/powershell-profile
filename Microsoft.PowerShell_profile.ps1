@@ -484,7 +484,7 @@ Register-ArgumentCompleter -Native -CommandName dotnet -ScriptBlock $scriptblock
 
 
 # Initialize Starship prompt
-Invoke-Expression (&starship init pwsh)
+Invoke-Expression (&starship init powershell)
 
 
 # Help Function
