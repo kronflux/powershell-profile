@@ -109,8 +109,26 @@ catch {
 
 # Configure Starship
 try {
-    & starship preset bracketed-segments -o "$HOME\.config\starship.toml"
-    Write-Host "Starship configuration created at $HOME\.config\starship.toml"
+    $starshipConfigDir = "$HOME\.config"
+    $starshipConfigFile = "$starshipConfigDir\starship.toml"
+
+    # Ensure the ~/.config directory exists
+    if (-not (Test-Path -Path $starshipConfigDir)) {
+        New-Item -ItemType Directory -Path $starshipConfigDir -Force
+        Write-Host "Created configuration directory: $starshipConfigDir"
+    }
+
+    # Generate the bracketed-segments configuration
+    if (-not (Test-Path -Path $starshipConfigFile)) {
+        & starship preset bracketed-segments -o $starshipConfigFile
+        Write-Host "Starship configuration created at $starshipConfigFile with bracketed-segments preset"
+    } else {
+        Write-Host "Starship configuration file already exists: $starshipConfigFile"
+    }
+
+    # Set the STARSHIP_CONFIG environment variable
+    $env:STARSHIP_CONFIG = $starshipConfigFile
+    Write-Host "Environment variable STARSHIP_CONFIG set to: $starshipConfigFile"
 }
 catch {
     Write-Error "Failed to configure Starship. Error: $_"
