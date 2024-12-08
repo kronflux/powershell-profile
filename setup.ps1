@@ -7,7 +7,7 @@ if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 # Function to test internet connectivity
 function Test-InternetConnection {
     try {
-        $testConnection = Test-Connection -ComputerName www.google.com -Count 1 -ErrorAction Stop
+        $testConnection = Test-Connection -ComputerName 1.1.1.1 -Count 1 -ErrorAction Stop
         return $true
     }
     catch {
@@ -19,8 +19,8 @@ function Test-InternetConnection {
 # Function to install Nerd Fonts
 function Install-NerdFonts {
     param (
-        [string]$FontName = "CascadiaCode",
-        [string]$FontDisplayName = "CaskaydiaCove NF",
+        [string]$FontName = "Mononoki",
+        [string]$FontDisplayName = "Mononoki NF",
         [string]$Version = "3.2.1"
     )
 
@@ -79,7 +79,7 @@ if (!(Test-Path -Path $PROFILE -PathType Leaf)) {
             New-Item -Path $profilePath -ItemType "directory"
         }
 
-        Invoke-RestMethod https://github.com/ChrisTitusTech/powershell-profile/raw/main/Microsoft.PowerShell_profile.ps1 -OutFile $PROFILE
+        Invoke-RestMethod https://github.com/kronflux/powershell-profile/raw/main/Microsoft.PowerShell_profile.ps1 -OutFile $PROFILE
         Write-Host "The profile @ [$PROFILE] has been created."
         Write-Host "If you want to make any personal changes or customizations, please do so at [$profilePath\Profile.ps1] as there is an updater in the installed profile which uses the hash to update the profile and will lead to loss of changes"
     }
@@ -90,7 +90,7 @@ if (!(Test-Path -Path $PROFILE -PathType Leaf)) {
 else {
     try {
         Get-Item -Path $PROFILE | Move-Item -Destination "oldprofile.ps1" -Force
-        Invoke-RestMethod https://github.com/ChrisTitusTech/powershell-profile/raw/main/Microsoft.PowerShell_profile.ps1 -OutFile $PROFILE
+        Invoke-RestMethod https://github.com/kronflux/powershell-profile/raw/main/Microsoft.PowerShell_profile.ps1 -OutFile $PROFILE
         Write-Host "The profile @ [$PROFILE] has been created and old profile removed."
         Write-Host "Please back up any persistent components of your old profile to [$HOME\Documents\PowerShell\Profile.ps1] as there is an updater in the installed profile which uses the hash to update the profile and will lead to loss of changes"
     }
@@ -99,19 +99,28 @@ else {
     }
 }
 
-# OMP Install
+# Install Starship
 try {
-    winget install -e --accept-source-agreements --accept-package-agreements JanDeDobbeleer.OhMyPosh
+    winget install -e --accept-source-agreements --accept-package-agreements Starship.Starship
 }
 catch {
-    Write-Error "Failed to install Oh My Posh. Error: $_"
+    Write-Error "Failed to install Starship. Error: $_"
 }
 
-# Font Install
-Install-NerdFonts -FontName "CascadiaCode" -FontDisplayName "CaskaydiaCove NF"
+# Configure Starship
+try {
+    & starship preset bracketed-segments -o "$HOME\.config\starship.toml"
+    Write-Host "Starship configuration created at $HOME\.config\starship.toml"
+}
+catch {
+    Write-Error "Failed to configure Starship. Error: $_"
+}
+
+# Install Nerd Font
+Install-NerdFonts -FontName "Mononoki" -FontDisplayName "Mononoki NF"
 
 # Final check and message to the user
-if ((Test-Path -Path $PROFILE) -and (winget list --name "OhMyPosh" -e) -and ($fontFamilies -contains "CaskaydiaCove NF")) {
+if ((Test-Path -Path $PROFILE) -and (winget list --name "Starship" -e) -and ($fontFamilies -contains "Mononoki NF")) {
     Write-Host "Setup completed successfully. Please restart your PowerShell session to apply changes."
 } else {
     Write-Warning "Setup completed with errors. Please check the error messages above."
@@ -131,12 +140,4 @@ try {
 }
 catch {
     Write-Error "Failed to install Terminal Icons module. Error: $_"
-}
-# zoxide Install
-try {
-    winget install -e --id ajeetdsouza.zoxide
-    Write-Host "zoxide installed successfully."
-}
-catch {
-    Write-Error "Failed to install zoxide. Error: $_"
 }
